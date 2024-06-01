@@ -96,6 +96,7 @@ extern void fbp(TestStruct *t) {
 		VectorE[loop*2+1]= sin(temp);
 	}
 
+    // xcor is the xcor of recon pixels
 	for(loop=0;loop<RecSize;loop++) {
 		xCor[loop] = (loop-centerX)*DeltaR-XOffSet-phantomXOffSet;}
 	for(loop=0;loop<RecSize;loop++) {
@@ -128,13 +129,21 @@ extern void fbp(TestStruct *t) {
                         for(ProjIndex=0;ProjIndex<ProjNum;ProjIndex++)
                         {
                             //the relative x/y distance between object and source
+                            //or X-a(lambda) in henyong slide
                             DSX[0]= xCor[i]-VectorS[ProjIndex*2];
                             DSX[1]= yCor[j]-VectorS[ProjIndex*2+1];
 				            //Dlocal is L
                             Dlocal = sqrt(DSX[0]*DSX[0]+DSX[1]*DSX[1]+zCor[k]*zCor[k]);
+				            // this seems to be a way to find the right pixel to interpolate
+                            // so it connect source and object, then project it into detector, and then calculate four pixels
+                            // check hengyong courde 4, slide 26 for some references
+                            // dis is between iso center and the intersection point between isocenter and D_od
+                            // maybe not, dis should be the delimiter of artan etc
+                           
                             dis   = fabs(xCor[i]*VectorE[ProjIndex*2]+yCor[j]*VectorE[ProjIndex*2+1]-ScanR);
                             UCor  = atan((DSX[0]*VectorE[ProjIndex*2+1]-DSX[1]*VectorE[ProjIndex*2])/dis);
                             VCor  = (zCor[k]*DistD)/dis;
+                             // note delty is in angle, while deltaz is in distance
                             VCor  = VCor/DeltaZ+ZCtr;
                             UCor  = UCor/DeltaY+YCtr;
                             UL    = (floor)(UCor);
@@ -143,6 +152,7 @@ extern void fbp(TestStruct *t) {
                             VV    = VL+1;
                             alfa  = UU-UCor;
                             beta  = VV-VCor;
+                            // U is along Y direction, V is along z direction
                             if((UL>=0)&(UU<YL)&(VL>=0)&(VV<ZL))
                             {
                              t->RecIm[i][j][k] = (t->GF[UU][VL][ProjIndex]*(1-alfa)*beta+
