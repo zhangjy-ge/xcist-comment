@@ -110,6 +110,8 @@ extern void fbp(TestStruct *t) {
 
     //IR = (int)(RecSize/10);
 
+	//note: the equation is 3D version of eq 3.48 (with additional scaling of cos(tau))
+    //pixel driven method, means for each recon pixel, find the corresponding four pixels in sinogram to interpolate
 #pragma omp parallel for collapse(3) private(i,j,k,ProjIndex, DSX, Dlocal, dis, UCor, VCor, UL, VL, UU, VV, alfa, beta)
 	for (i=0;i<FOILength;i++)
 		{
@@ -125,8 +127,10 @@ extern void fbp(TestStruct *t) {
 					t->RecIm[i][j][k] = 0;
                         for(ProjIndex=0;ProjIndex<ProjNum;ProjIndex++)
                         {
+                            //the relative x/y distance between object and source
                             DSX[0]= xCor[i]-VectorS[ProjIndex*2];
                             DSX[1]= yCor[j]-VectorS[ProjIndex*2+1];
+				            //Dlocal is L
                             Dlocal = sqrt(DSX[0]*DSX[0]+DSX[1]*DSX[1]+zCor[k]*zCor[k]);
                             dis   = fabs(xCor[i]*VectorE[ProjIndex*2]+yCor[j]*VectorE[ProjIndex*2+1]-ScanR);
                             UCor  = atan((DSX[0]*VectorE[ProjIndex*2+1]-DSX[1]*VectorE[ProjIndex*2])/dis);
